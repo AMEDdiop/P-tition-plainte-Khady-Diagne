@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper for valid ID
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    match /counters/{counterId} {
+      allow read: if isValidId(counterId);
+      // Allow increment only if a new support document is also created in the same batch
+      allow update: if isValidId(counterId) 
+                   && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count'])
+                   && request.resource.data.count == resource.data.count + 1;
+      
+      allow create: if isValidId(counterId) && request.resource.data.count == 1;
+    }
+
+    match /supports/{email} {
+      function isValidEmail(e) {
+        return e is string && e.size() >= 5 && e.size() <= 255 && e.matches('^[^@]+@[^@]+\\.[^@]+$');
+      }
+      
+      allow get: if true; // Needed to check if email exists client-side
+      allow create: if isValidEmail(email)
+                   && request.resource.data.email == email
+                   && request.resource.data.createdAt == request.time;
+    }
+  }
+}

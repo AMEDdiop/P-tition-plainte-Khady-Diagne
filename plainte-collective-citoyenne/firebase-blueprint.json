@@ -1,0 +1,36 @@
+{
+  "entities": {
+    "Counter": {
+      "title": "Counter",
+      "description": "Stores the total number of citizen supports.",
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "number",
+          "description": "Total count of supports"
+        }
+      },
+      "required": ["count"]
+    },
+    "SupportEntry": {
+      "title": "Support Entry",
+      "description": "Information about a citizen support.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "createdAt"]
+    }
+  },
+  "firestore": {
+    "counters/supports": {
+      "schema": "Counter",
+      "description": "Single document holding the total support count."
+    },
+    "supports/{email}": {
+      "schema": "SupportEntry",
+      "description": "Unique support entries indexed by email."
+    }
+  }
+}
